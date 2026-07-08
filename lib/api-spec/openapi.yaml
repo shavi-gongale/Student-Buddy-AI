@@ -1,0 +1,1008 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Student Buddy AI API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User profile and settings
+  - name: progress
+    description: Problem-solving progress tracking
+  - name: notes
+    description: User notes
+  - name: bookmarks
+    description: Bookmarked problems
+  - name: achievements
+    description: XP, levels, and badges
+  - name: ai
+    description: AI mentor features (hints, chat, code review)
+  - name: dashboard
+    description: Dashboard aggregates and stats
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+    put:
+      operationId: updateMe
+      tags: [users]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /progress:
+    get:
+      operationId: listProgress
+      tags: [progress]
+      summary: List user's problem-solving progress entries
+      responses:
+        "200":
+          description: Progress entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Progress"
+    post:
+      operationId: createProgress
+      tags: [progress]
+      summary: Log a solved/attempted problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressInput"
+      responses:
+        "201":
+          description: Created progress entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Progress"
+
+  /progress/{id}:
+    delete:
+      operationId: deleteProgress
+      tags: [progress]
+      summary: Delete a progress entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List user notes
+      responses:
+        "200":
+          description: Notes list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /notes/{id}:
+    get:
+      operationId: getNote
+      tags: [notes]
+      summary: Get a note by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /bookmarks:
+    get:
+      operationId: listBookmarks
+      tags: [bookmarks]
+      summary: List bookmarked problems
+      responses:
+        "200":
+          description: Bookmarks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bookmark"
+    post:
+      operationId: createBookmark
+      tags: [bookmarks]
+      summary: Bookmark a problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookmarkInput"
+      responses:
+        "201":
+          description: Created bookmark
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bookmark"
+
+  /bookmarks/{id}:
+    delete:
+      operationId: deleteBookmark
+      tags: [bookmarks]
+      summary: Remove a bookmark
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /achievements:
+    get:
+      operationId: listAchievements
+      tags: [achievements]
+      summary: List user achievements and badges
+      responses:
+        "200":
+          description: Achievements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Achievement"
+
+  /ai/hint:
+    post:
+      operationId: getHint
+      tags: [ai]
+      summary: Get a multi-level hint for a coding problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HintRequest"
+      responses:
+        "200":
+          description: Hint response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HintResponse"
+
+  /ai/analyze:
+    post:
+      operationId: analyzeProblem
+      tags: [ai]
+      summary: Analyze a coding problem (title, difficulty, tags, complexity)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+
+  /ai/review:
+    post:
+      operationId: reviewCode
+      tags: [ai]
+      summary: Review submitted code for bugs, optimizations, and edge cases
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeReviewRequest"
+      responses:
+        "200":
+          description: Code review result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodeReviewResponse"
+
+  /ai/chat:
+    post:
+      operationId: chatWithMentor
+      tags: [ai]
+      summary: Chat with the AI coding mentor (single-turn)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: Mentor reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+
+  /ai/explain:
+    post:
+      operationId: explainConcept
+      tags: [ai]
+      summary: Explain a DSA concept
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExplainRequest"
+      responses:
+        "200":
+          description: Explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExplainResponse"
+
+  /ai/study-plan:
+    post:
+      operationId: generateStudyPlan
+      tags: [ai]
+      summary: Generate a personalized study plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyPlanRequest"
+      responses:
+        "200":
+          description: Study plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyPlanResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get overall dashboard stats (XP, streak, problems solved, topics)
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/topic-breakdown:
+    get:
+      operationId: getTopicBreakdown
+      tags: [dashboard]
+      summary: Get problems solved per topic/category
+      responses:
+        "200":
+          description: Topic breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopicStat"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed (last 10 solved problems)
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Progress"
+
+  /dashboard/daily-challenge:
+    get:
+      operationId: getDailyChallenge
+      tags: [dashboard]
+      summary: Get today's daily challenge problem
+      responses:
+        "200":
+          description: Daily challenge
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyChallenge"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        xp:
+          type: integer
+        level:
+          type: integer
+        streak:
+          type: integer
+        weakTopics:
+          type: array
+          items:
+            type: string
+        strongTopics:
+          type: array
+          items:
+            type: string
+        interviewReadinessScore:
+          type: integer
+        preferredLanguage:
+          type: string
+        darkMode:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - clerkId
+        - name
+        - email
+        - xp
+        - level
+        - streak
+        - weakTopics
+        - strongTopics
+        - interviewReadinessScore
+        - preferredLanguage
+        - darkMode
+        - createdAt
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        preferredLanguage:
+          type: string
+        darkMode:
+          type: boolean
+
+    Progress:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        problemTitle:
+          type: string
+        platform:
+          type: string
+        difficulty:
+          type: string
+        topic:
+          type: string
+        status:
+          type: string
+        language:
+          type: string
+        timeSpentMins:
+          type: ["integer", "null"]
+        solvedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - problemTitle
+        - platform
+        - difficulty
+        - topic
+        - status
+        - language
+        - createdAt
+
+    ProgressInput:
+      type: object
+      properties:
+        problemTitle:
+          type: string
+        platform:
+          type: string
+        difficulty:
+          type: string
+        topic:
+          type: string
+        status:
+          type: string
+        language:
+          type: string
+        timeSpentMins:
+          type: ["integer", "null"]
+      required:
+        - problemTitle
+        - platform
+        - difficulty
+        - topic
+        - status
+        - language
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        problemTitle:
+          type: ["string", "null"]
+        topic:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - title
+        - content
+        - createdAt
+        - updatedAt
+
+    NoteInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        problemTitle:
+          type: string
+        topic:
+          type: string
+      required:
+        - title
+        - content
+
+    NoteUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        problemTitle:
+          type: string
+        topic:
+          type: string
+
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        problemTitle:
+          type: string
+        platform:
+          type: string
+        difficulty:
+          type: string
+        topic:
+          type: string
+        url:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - problemTitle
+        - platform
+        - difficulty
+        - topic
+        - createdAt
+
+    BookmarkInput:
+      type: object
+      properties:
+        problemTitle:
+          type: string
+        platform:
+          type: string
+        difficulty:
+          type: string
+        topic:
+          type: string
+        url:
+          type: string
+      required:
+        - problemTitle
+        - platform
+        - difficulty
+        - topic
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        xpReward:
+          type: integer
+        earnedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - description
+        - icon
+        - xpReward
+        - earnedAt
+
+    HintRequest:
+      type: object
+      properties:
+        problemTitle:
+          type: string
+        problemDescription:
+          type: string
+        hintLevel:
+          type: integer
+        language:
+          type: string
+        userCode:
+          type: string
+      required:
+        - problemTitle
+        - hintLevel
+        - language
+
+    HintResponse:
+      type: object
+      properties:
+        hint:
+          type: string
+        hintLevel:
+          type: integer
+        nextLevelAvailable:
+          type: boolean
+      required:
+        - hint
+        - hintLevel
+        - nextLevelAvailable
+
+    AnalyzeRequest:
+      type: object
+      properties:
+        problemTitle:
+          type: string
+        problemDescription:
+          type: string
+        platform:
+          type: string
+      required:
+        - problemTitle
+
+    AnalyzeResponse:
+      type: object
+      properties:
+        difficulty:
+          type: string
+        topics:
+          type: array
+          items:
+            type: string
+        timeComplexity:
+          type: string
+        spaceComplexity:
+          type: string
+        summary:
+          type: string
+        approachSuggestion:
+          type: string
+      required:
+        - difficulty
+        - topics
+        - timeComplexity
+        - spaceComplexity
+        - summary
+        - approachSuggestion
+
+    CodeReviewRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        language:
+          type: string
+        problemTitle:
+          type: string
+        problemDescription:
+          type: string
+      required:
+        - code
+        - language
+
+    CodeReviewResponse:
+      type: object
+      properties:
+        overallFeedback:
+          type: string
+        bugs:
+          type: array
+          items:
+            type: string
+        optimizations:
+          type: array
+          items:
+            type: string
+        edgeCases:
+          type: array
+          items:
+            type: string
+        confidenceScore:
+          type: integer
+        timeComplexity:
+          type: string
+        spaceComplexity:
+          type: string
+        dryRunExample:
+          type: string
+      required:
+        - overallFeedback
+        - bugs
+        - optimizations
+        - edgeCases
+        - confidenceScore
+        - timeComplexity
+        - spaceComplexity
+        - dryRunExample
+
+    ChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        problemTitle:
+          type: ["string", "null"]
+        conversationHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+      required:
+        - message
+
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+        content:
+          type: string
+      required:
+        - role
+        - content
+
+    ChatResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+      required:
+        - reply
+
+    ExplainRequest:
+      type: object
+      properties:
+        concept:
+          type: string
+        depth:
+          type: string
+      required:
+        - concept
+
+    ExplainResponse:
+      type: object
+      properties:
+        explanation:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        examples:
+          type: array
+          items:
+            type: string
+        relatedConcepts:
+          type: array
+          items:
+            type: string
+      required:
+        - explanation
+        - keyPoints
+        - examples
+        - relatedConcepts
+
+    StudyPlanRequest:
+      type: object
+      properties:
+        weakTopics:
+          type: array
+          items:
+            type: string
+        targetCompany:
+          type: ["string", "null"]
+        durationDays:
+          type: integer
+      required:
+        - weakTopics
+        - durationDays
+
+    StudyPlanResponse:
+      type: object
+      properties:
+        plan:
+          type: array
+          items:
+            $ref: "#/components/schemas/StudyDay"
+        overview:
+          type: string
+      required:
+        - plan
+        - overview
+
+    StudyDay:
+      type: object
+      properties:
+        day:
+          type: integer
+        topic:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+        estimatedHours:
+          type: number
+      required:
+        - day
+        - topic
+        - tasks
+        - estimatedHours
+
+    DashboardStats:
+      type: object
+      properties:
+        totalSolved:
+          type: integer
+        easyCount:
+          type: integer
+        mediumCount:
+          type: integer
+        hardCount:
+          type: integer
+        currentStreak:
+          type: integer
+        xp:
+          type: integer
+        level:
+          type: integer
+        interviewReadinessScore:
+          type: integer
+        totalBookmarks:
+          type: integer
+        totalNotes:
+          type: integer
+        topicsCount:
+          type: integer
+      required:
+        - totalSolved
+        - easyCount
+        - mediumCount
+        - hardCount
+        - currentStreak
+        - xp
+        - level
+        - interviewReadinessScore
+        - totalBookmarks
+        - totalNotes
+        - topicsCount
+
+    TopicStat:
+      type: object
+      properties:
+        topic:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+      required:
+        - topic
+        - count
+        - percentage
+
+    DailyChallenge:
+      type: object
+      properties:
+        title:
+          type: string
+        platform:
+          type: string
+        difficulty:
+          type: string
+        topic:
+          type: string
+        url:
+          type: ["string", "null"]
+        description:
+          type: string
+      required:
+        - title
+        - platform
+        - difficulty
+        - topic
+        - description
