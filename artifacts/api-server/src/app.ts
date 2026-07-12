@@ -39,14 +39,22 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
+const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
+
+if (clerkPublishableKey) {
+  app.use(
+    clerkMiddleware((req) => ({
+      publishableKey: publishableKeyFromHost(
+        getClerkProxyHost(req) ?? "",
+        clerkPublishableKey,
+      ),
+    })),
+  );
+} else {
+  logger.warn(
+    "CLERK_PUBLISHABLE_KEY is not set; Clerk auth is disabled. The API will run without Clerk authentication.",
+  );
+}
 
 app.use("/api", router);
 

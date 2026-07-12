@@ -46,14 +46,14 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
       db.select({ count: sql<number>`count(*)` }).from(notesTable).where(eq(notesTable.userId, userId)),
     ]);
 
-    const solvedProblems = allProgress.filter(p => p.status === "solved");
-    const topicsSet = new Set(allProgress.map(p => p.topic));
+    const solvedProblems = allProgress.filter((p: any) => p.status === "solved");
+    const topicsSet = new Set(allProgress.map((p: any) => p.topic));
 
     res.json({
       totalSolved: solvedProblems.length,
-      easyCount: solvedProblems.filter(p => p.difficulty === "Easy").length,
-      mediumCount: solvedProblems.filter(p => p.difficulty === "Medium").length,
-      hardCount: solvedProblems.filter(p => p.difficulty === "Hard").length,
+      easyCount: solvedProblems.filter((p: any) => p.difficulty === "Easy").length,
+      mediumCount: solvedProblems.filter((p: any) => p.difficulty === "Medium").length,
+      hardCount: solvedProblems.filter((p: any) => p.difficulty === "Hard").length,
       currentStreak: user?.streak ?? 0,
       xp: user?.xp ?? 0,
       level: user?.level ?? 1,

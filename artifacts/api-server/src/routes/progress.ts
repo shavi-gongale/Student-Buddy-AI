@@ -69,7 +69,7 @@ async function computeAndUpdateUserStats(
   const existingAchievements = await db.query.achievementsTable.findMany({
     where: eq(achievementsTable.userId, userId),
   });
-  const earnedNames = new Set(existingAchievements.map(a => a.name));
+  const earnedNames = new Set(existingAchievements.map((a: any) => a.name));
 
   const conditions: Record<string, boolean> = {
     first_solve:  totalSolved >= 1,

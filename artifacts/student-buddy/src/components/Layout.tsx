@@ -76,7 +76,61 @@ function NavItem({ icon: Icon, label, href, active, onClick }: {
   );
 }
 
-function SidebarContent({ location, onNavClick }: { location: string; onNavClick?: () => void }) {
+function GuestSidebarContent({ location, onNavClick }: { location: string; onNavClick?: () => void }) {
+  return (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="h-16 flex items-center px-5 border-b border-white/5 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center glow-primary-sm">
+            <Zap className="w-4 h-4 text-primary" />
+          </div>
+          <span className="text-foreground font-bold text-lg tracking-tight">
+            Student<span className="text-primary">Buddy</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Guest Profile Card */}
+      <div className="p-4 border-b border-white/5 shrink-0">
+        <div className="space-y-2">
+          <p className="font-semibold text-sm text-foreground">Guest mode</p>
+          <p className="text-xs text-muted-foreground">Clerk authentication is disabled. Application navigation is still available.</p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            <p className="text-xs font-semibold text-muted-foreground/50 uppercase tracking-widest px-3 mb-1.5">
+              {group.label}
+            </p>
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavItem
+                  key={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  href={item.href}
+                  active={location === item.href}
+                  onClick={onNavClick}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom actions */}
+      <div className="p-3 border-t border-white/5 space-y-0.5 shrink-0">
+        <NavItem icon={Settings} label="Settings" href="/settings" active={location === "/settings"} onClick={onNavClick} />
+      </div>
+    </div>
+  );
+}
+
+function AuthSidebarContent({ location, onNavClick }: { location: string; onNavClick?: () => void }) {
   const { signOut } = useClerk();
   const { user: clerkUser } = useUser();
   const { data: user, isLoading } = useGetMe({
@@ -199,9 +253,11 @@ function SidebarContent({ location, onNavClick }: { location: string; onNavClick
   );
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children, clerkEnabled = true }: { children: React.ReactNode; clerkEnabled?: boolean }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const SidebarContent = clerkEnabled ? AuthSidebarContent : GuestSidebarContent;
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">

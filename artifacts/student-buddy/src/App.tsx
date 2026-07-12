@@ -20,22 +20,19 @@ import Achievements from "./pages/Achievements";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/not-found";
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
+const rawClerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = rawClerkKey
+  ? publishableKeyFromHost(window.location.hostname, rawClerkKey)
+  : null;
 
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const basePath = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
+const clerkEnabled = Boolean(clerkPubKey);
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
     ? path.slice(basePath.length) || "/"
     : path;
-}
-
-if (!clerkPubKey) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
 }
 
 const clerkAppearance = {
@@ -116,9 +113,57 @@ function ClerkQueryClientCacheInvalidator() {
 function App() {
   const [, setLocation] = useLocation();
 
+  if (!clerkEnabled) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Layout clerkEnabled={false}>
+          <Switch>
+            <Route path="/">
+              <Dashboard />
+            </Route>
+            <Route path="/mentor">
+              <MentorChat />
+            </Route>
+            <Route path="/hints">
+              <Hints />
+            </Route>
+            <Route path="/analyzer">
+              <Analyzer />
+            </Route>
+            <Route path="/review">
+              <Review />
+            </Route>
+            <Route path="/explain">
+              <Explain />
+            </Route>
+            <Route path="/study-plan">
+              <StudyPlan />
+            </Route>
+            <Route path="/progress">
+              <Progress />
+            </Route>
+            <Route path="/notes">
+              <Notes />
+            </Route>
+            <Route path="/bookmarks">
+              <Bookmarks />
+            </Route>
+            <Route path="/achievements">
+              <Achievements />
+            </Route>
+            <Route path="/settings">
+              <Settings />
+            </Route>
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </QueryClientProvider>
+    );
+  }
+
   return (
     <ClerkProvider
-      publishableKey={clerkPubKey}
+      publishableKey={clerkPubKey as string}
       proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -28,14 +28,14 @@ const DIFF_BG: Record<string, string> = {
 
 const PIE_COLORS = ["#00e5ff", "#7c3aed", "#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#ec4899", "#14b8a6"];
 
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.07 } }
 };
 
-const item = {
+const item: Variants = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }
 };
 
 function CircularProgress({ value, size = 80, strokeWidth = 6, color = "#00e5ff", label, sublabel }: {
